@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gramáticas Regulares — Derivação e Conversão para Expressão Regular</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="particle" aria-hidden="true"></div>
+<div class="particle" aria-hidden="true"></div>
+<div class="particle" aria-hidden="true"></div>
+<div class="particle" aria-hidden="true"></div>
+<div class="particle" aria-hidden="true"></div>
+<div class="bg-effects" aria-hidden="true"></div>
+
+<div class="app-container">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">Σ</div>
+      <div>
+        <h1 class="brand-title">Gramáticas <span>Regulares</span></h1>
+        <p class="brand-subtitle">Derivação com pilha • Conversão para expressão regular (Lema de Arden)</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="header-badge">UNESC — Linguagens Formais e Autômatos</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-grid">
+    <!-- LEFT: Input Panel -->
+    <section class="input-section" aria-label="Configuração da gramática">
+      <!-- Examples -->
+      <section class="card">
+        <h2 class="card-title">
+          <span class="card-title-bar cyan" aria-hidden="true"></span>
+          Gramáticas de Exemplo
+        </h2>
+        <div class="examples-grid">
+          <button type="button" class="example-btn active" data-example="0">
+            <span class="example-name">Exemplo 1: S ::= aS | ab</span>
+            <span class="example-desc">Gera cadeias do tipo a⁺b (ex: ab, aab, aaab...)</span>
+          </button>
+          <button type="button" class="example-btn" data-example="1">
+            <span class="example-name">Exemplo 2: S ::= aA | b &nbsp; A ::= bS | a</span>
+            <span class="example-desc">Gramática com 2 não-terminais, gera cadeias alternadas</span>
+          </button>
+          <button type="button" class="example-btn" data-example="2">
+            <span class="example-name">Exemplo 3: S ::= 0A &nbsp; A ::= 1S | 0</span>
+            <span class="example-desc">Cadeias binárias do tipo (01)*0</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Grammar Input -->
+      <section class="card">
+        <h2 class="card-title">
+          <span class="card-title-bar violet" aria-hidden="true"></span>
+          Definição da Gramática G = {N, T, P, S}
+        </h2>
+        <div class="grammar-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputN">
+                Não-terminais <span class="label-tag">N</span>
+              </label>
+              <input id="inputN" class="form-input" value="{ S }" placeholder="{ S, A, B }">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputT">
+                Terminais <span class="label-tag">T</span>
+              </label>
+              <input id="inputT" class="form-input" value="{ a, b }" placeholder="{ a, b, c }">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputP">
+              Regras de Produção <span class="label-tag">P</span>
+              <button type="button" class="info-hint" title="Uma regra por linha. Formato: S ::= aS | ab" aria-label="Ajuda: uma regra por linha, no formato S ::= aS | ab">?</button>
+            </label>
+            <textarea id="inputP" class="form-textarea" placeholder="S ::= aS | ab&#10;A ::= bS | a">S ::= aS | ab</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputS">
+              Símbolo Inicial <span class="label-tag">S</span>
+            </label>
+            <input id="inputS" class="form-input" value="S" placeholder="S">
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn-primary" id="btnGenerate">
+              Gerar Sentença
+            </button>
+            <button type="button" class="btn-secondary" id="btnClear">
+              Limpar
+            </button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- RIGHT: Results Panel -->
+    <section class="results-area" id="resultsArea" aria-live="polite" aria-label="Resultados da derivação">
+      <!-- Empty state (shown initially) -->
+      <section class="card" id="emptyState">
+        <div class="results-empty">
+          <div class="empty-icon" aria-hidden="true">λ</div>
+          <h2 class="empty-title">Nenhuma derivação realizada</h2>
+          <p class="empty-desc">
+            Selecione um exemplo ou insira uma gramática regular e clique em "Gerar Sentença" para iniciar a derivação.
+          </p>
+        </div>
+      </section>
+
+      <!-- Results (hidden initially) -->
+      <div id="resultsContent" hidden>
+        <!-- Error -->
+        <div id="errorBox" class="error-box" role="alert" hidden></div>
+
+        <!-- Sentence Output -->
+        <section class="card" id="outputCard">
+          <h2 class="card-title">
+            <span class="card-title-bar green" aria-hidden="true"></span>
+            Resultado da Derivação
+          </h2>
+          <dl class="stats-bar" id="statsBar"></dl>
+          <div class="output-wrap">
+            <p class="form-label output-label">Sentença Gerada</p>
+            <output class="output-box" id="outputSentence"></output>
+          </div>
+        </section>
+
+        <!-- Derivation + Stack -->
+        <div class="two-col">
+          <section class="card">
+            <h3 class="card-title">
+              <span class="card-title-bar cyan" aria-hidden="true"></span>
+              Derivação Passo a Passo
+            </h3>
+            <ol class="derivation-list" id="derivationSteps"></ol>
+          </section>
+
+          <section class="card">
+            <h3 class="card-title">
+              <span class="card-title-bar violet" aria-hidden="true"></span>
+              Pilha de Produções
+            </h3>
+            <ol class="stack-visual" id="stackVisual"></ol>
+          </section>
+        </div>
+
+        <!-- Regex -->
+        <section class="card">
+          <div class="regex-section" id="regexSection"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/examples.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/derivation.js"></script>
+<script src="js/regexConverter.js"></script>
+<script src="js/ui.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
