@@ -1,4 +1,3 @@
-[GramaticasRegulares.README.md](https://github.com/user-attachments/files/32305195/GramaticasRegulares.README.md)
 # Gramáticas Regulares
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
